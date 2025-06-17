@@ -1,2 +1,2 @@
-# optimization-thing
+# Optimization project
 Optimization project, from my degree
