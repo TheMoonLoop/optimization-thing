@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from FuncCtrls import configurar_parametros
 
-def evaluar_vecinos(f, x, delta):
+def evaluar_vecinos(x, delta):
     vecinos = []
     for i in range(len(x)):
         for d in [delta, -delta]:
@@ -21,7 +21,7 @@ def hooke_jeeves(funcion, x0, delta_inicial, precision, max_iter):
 
     while delta > precision and k < max_iter:
         mejora = False
-        vecinos = evaluar_vecinos(f_vec, x_base, delta)
+        vecinos = evaluar_vecinos(x_base, delta)
         x_nuevo = x_base
 
         for vecino in vecinos:
