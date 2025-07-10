@@ -3,9 +3,11 @@ import numpy as np
 import importlib
 import os
 
+# Configuración inicial de la página
 st.set_page_config(page_title="Optimización - Proyecto Final", layout="centered")
 VALOR_DEFECTO_METODO = "Selecciona un método"
 
+# Inicialización de variables de sesión (estado)
 if "categoria_radio" not in st.session_state:
     st.session_state.categoria_radio = "Métodos Univariable"
 
@@ -18,10 +20,13 @@ if "select_multi" not in st.session_state:
 if "seleccion" not in st.session_state:
     st.session_state.seleccion = None
 
+# Ruta donde se encuentran los métodos
 metodos_path = "metodos"
-uni_modulos = {}
-multi_modulos = {}
+uni_modulos = {}    # Diccionario para métodos univariables
+multi_modulos = {}  # Diccionario para métodos multivariables
 
+# Diccionario de funciones disponibles para probar los métodos
+# Cada categoría contiene funciones junto con sus respectivos rangos
 funciones = {
     "uni": {
         "Área Lata": (lambda r: 2*np.pi*r**2 + 500/r, (0.1, 10)),
@@ -33,32 +38,46 @@ funciones = {
     },
     "multi": {
         "Rastrigin": (
-            lambda x: 10*len(x) + sum(xi**2 - 10 * np.cos(2*np.pi*xi) for xi in x),
-            (-5.12, 5.12)
+            lambda x, y: 20 + (x**2 - 10 * np.cos(2 * np.pi * x)) + (y**2 - 10 * np.cos(2 * np.pi * y)),
+            ((-5.12, 5.12), (-5.12, 5.12))
         ),
         "Ackley": (
-            lambda x: -20 * np.exp(-0.2 * np.sqrt(1/len(x) * sum(xi**2 for xi in x)))
-                      - np.exp(1/len(x) * sum(np.cos(2*np.pi*xi) for xi in x))
-                      + 20 + np.exp(1),
-            (-32.768, 32.768)
+            lambda x, y: -20 * np.exp(-0.2 * np.sqrt(0.5 * (x**2 + y**2)))
+                         - np.exp(0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y)))
+                         + 20 + np.exp(1),
+            ((-32.768, 32.768), (-32.768, 32.768))
         ),
-        "Sphere": (lambda x: sum(xi**2 for xi in x), (-100, 100)),
+        "Sphere": (
+            lambda x, y: x**2 + y**2,
+            ((-100, 100), (-100, 100))
+        ),
         "Rosenbrock": (
-            lambda x: sum(100 * (x[i + 1] - x[i]**2)**2 + (1 - x[i])**2 for i in range(len(x) - 1)),
-            (-100, 100)
+            lambda x, y: 100 * (y - x**2)**2 + (1 - x)**2,
+            ((-100, 100), (-100, 100))
         ),
         "Beale": (
-            lambda x,y: (1.5 - x + x*y)**2
-                        + (2.25 - x + x*y**2)**2
-                        + (2.625 - x + x*y**3)**2,
+            lambda x, y: (1.5 - x + x*y)**2
+                         + (2.25 - x + x*y**2)**2
+                         + (2.625 - x + x*y**3)**2,
             ((-4.5, 4.5), (-4.5, 4.5))
         ),
-        "Booth": (lambda x,y: (x + 2*y - 7)**2 + (2*x + y - 5)**2, (-10,10), (-10,10)),
-        "Himmelblau": (lambda x,y: (x**2 + y - 11)**2 + (x + y**2 - 7)**2, ((-5, 5), (-5, 5))),
-        "McCormick": (lambda x,y: np.sin(x+y) + (x-y)**2 - 1.5*x + 2.5*y + 1, (-1.5,4), (-3,4))
+        "Booth": (
+            lambda x, y: (x + 2*y - 7)**2 + (2*x + y - 5)**2,
+            ((-10, 10), (-10, 10))
+        ),
+        "Himmelblau": (
+            lambda x, y: (x**2 + y - 11)**2 + (x + y**2 - 7)**2,
+            ((-5, 5), (-5, 5))
+        ),
+        "McCormick": (
+            lambda x, y: np.sin(x + y) + (x - y)**2 - 1.5*x + 2.5*y + 1,
+            ((-1.5, 4), (-3, 4))
+        )
     }
 }
 
+# Carga dinámica de módulos desde la carpeta "metodos/"
+# Se organizan en univariables y multivariables según el prefijo del archivo
 for filename in os.listdir(metodos_path):
     if filename.endswith(".py") and filename != "__init__.py":
         nombre_archivo = filename[:-3]
@@ -75,7 +94,9 @@ for filename in os.listdir(metodos_path):
         except Exception as e:
             st.warning(f"No se pudo cargar {nombre_archivo}: {e}")
 
+# SIDEBAR - Interfaz lateral para seleccionar métodos y funciones
 with st.sidebar:
+    # Selector de categoría principal
     categoria = st.radio(
         "Selecciona una categoría",
         ["Métodos Univariable", "Métodos Multivariable"],
@@ -83,7 +104,7 @@ with st.sidebar:
         index=0
     )
 
-    # Selección de método univariable
+    # Selector de métodos univariables
     if categoria == "Métodos Univariable" and uni_modulos:
         opciones_uni = list(uni_modulos.keys())
         seleccion = st.selectbox(
@@ -91,14 +112,13 @@ with st.sidebar:
             [VALOR_DEFECTO_METODO] + opciones_uni,
             key="select_uni"
         )
-        # Validación
         if seleccion in opciones_uni:
             st.session_state.seleccion = seleccion
         else:
             st.session_state.seleccion = None
         st.session_state.select_multi = VALOR_DEFECTO_METODO
 
-    # Selección de método multivariable
+    # Selector de métodos multivariables
     elif categoria == "Métodos Multivariable" and multi_modulos:
         opciones_multi = list(multi_modulos.keys())
         seleccion = st.selectbox(
@@ -112,7 +132,7 @@ with st.sidebar:
             st.session_state.seleccion = None
         st.session_state.select_uni = VALOR_DEFECTO_METODO
 
-    # Funciones univariable
+    # Selector de funciones para métodos univariables
     if categoria == "Métodos Univariable":
         metodo_seleccionado = st.session_state.get("select_uni", VALOR_DEFECTO_METODO)
         funciones_desactivado = metodo_seleccionado == VALOR_DEFECTO_METODO
@@ -130,7 +150,7 @@ with st.sidebar:
         else:
             funcion_actual, intervalo_actual = None, None
 
-    # Funciones multivariable
+    # Selector de funciones para métodos multivariables
     elif categoria == "Métodos Multivariable":
         metodo_seleccionado = st.session_state.get("select_multi", VALOR_DEFECTO_METODO)
         funciones_desactivado = metodo_seleccionado == VALOR_DEFECTO_METODO
@@ -148,18 +168,23 @@ with st.sidebar:
         else:
             funcion_actual, intervalo_actual = None, None
 
+# CONTENIDO PRINCIPAL
+# Si no hay ningún método seleccionado, mostrar mensaje de bienvenida
 if not st.session_state.seleccion:
     st.title("Métodos de Optimización")
     st.markdown("Selecciona un método en el menú lateral para visualizarlo.")
 else:
+    # Ejecutar el método seleccionado
     seleccion = st.session_state.seleccion
 
+    # Método univariable
     if seleccion in uni_modulos:
         if funcion_actual is not None and intervalo_actual is not None:
             uni_modulos[seleccion].run(funcion_actual, intervalo_actual)
         else:
             st.warning("Selecciona una función univariable válida.")
     
+    # Método multivariable
     elif seleccion in multi_modulos:
         if funcion_actual is not None and intervalo_actual is not None:
             multi_modulos[seleccion].run(funcion_actual, intervalo_actual)
