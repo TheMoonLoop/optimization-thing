@@ -13,9 +13,6 @@ st.markdown(
             min-width: 300px;
             max-width: 300px;
         }
-        [data-testid="stSidebar"] > div:first-child {
-            padding: 1rem;
-        }
     </style>
     """,
     unsafe_allow_html=True
