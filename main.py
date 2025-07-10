@@ -10,8 +10,18 @@ st.markdown(
     """
     <style>
         [data-testid="stSidebar"] {
-            min-width: 300px;
-            max-width: 300px;
+            min-width: 270px;
+            max-width: 270px;
+            padding-top: 30px;
+        }
+        [data-testid="stSidebarHeader"] {
+            display: none;
+        }
+        [data-testid="stHeader"] {
+            display: none;
+        }
+        [data-testid="stMainBlockContainer"] {
+            padding-top: 0px;
         }
     </style>
     """,
