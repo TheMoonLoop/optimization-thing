@@ -13,6 +13,7 @@ def evaluar_vecinos(f, x, delta):
     return vecinos
 
 def hooke_jeeves(funcion, x0, delta_inicial, precision, max_iter):
+    f_vec = lambda v: funcion(v[0], v[1])
     x_base = np.array(x0)
     delta = delta_inicial
     k = 0
@@ -20,11 +21,11 @@ def hooke_jeeves(funcion, x0, delta_inicial, precision, max_iter):
 
     while delta > precision and k < max_iter:
         mejora = False
-        vecinos = evaluar_vecinos(funcion, x_base, delta)
+        vecinos = evaluar_vecinos(f_vec, x_base, delta)
         x_nuevo = x_base
 
         for vecino in vecinos:
-            if funcion(vecino) < funcion(x_nuevo):
+            if f_vec(vecino) < f_vec(x_nuevo):
                 x_nuevo = vecino
                 mejora = True
 
@@ -47,7 +48,6 @@ def run(funcion, intervalo):
 
     (x_range, y_range), _, precision, iteraciones = resultado
     x0 = [(x_range[0] + x_range[1]) / 2, (y_range[0] + y_range[1]) / 2]
-    st.markdown(f"Punto inicial: {x0}")
 
     resultado_final, trayecto = hooke_jeeves(funcion, x0, delta_inicial=1.0, precision=precision, max_iter=iteraciones)
 
@@ -56,7 +56,7 @@ def run(funcion, intervalo):
     x = np.linspace(x_range[0], x_range[1], 300)
     y = np.linspace(y_range[0], y_range[1], 300)
     X, Y = np.meshgrid(x, y)
-    Z = np.vectorize(lambda x, y: funcion([x, y]))(X, Y)
+    Z = np.vectorize(lambda x, y: funcion(x, y))(X, Y)
 
     fig, ax = plt.subplots()
     ax.contourf(X, Y, Z, levels=50, cmap="viridis")
