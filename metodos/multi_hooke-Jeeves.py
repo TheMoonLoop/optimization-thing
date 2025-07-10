@@ -40,8 +40,6 @@ def hooke_jeeves(funcion, x0, delta_inicial, precision, max_iter):
     return x_base, trayecto
 
 def run(funcion, intervalo):
-    print("DEBUG FUNC:", funcion)
-    print("FUNC ARGS:", funcion.__code__.co_argcount)
     st.subheader("Método de Hooke-Jeeves")
 
     resultado = configurar_parametros(funcion, intervalo, clave_prefix="hooke_")
