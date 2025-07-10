@@ -5,6 +5,22 @@ import os
 
 # Configuración inicial de la página
 st.set_page_config(page_title="Optimización - Proyecto Final", layout="centered")
+
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebar"] {
+            min-width: 300px;
+            max-width: 300px;
+        }
+        [data-testid="stSidebar"] > div:first-child {
+            padding: 1rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 VALOR_DEFECTO_METODO = "Selecciona un método"
 
 # Inicialización de variables de sesión (estado)
