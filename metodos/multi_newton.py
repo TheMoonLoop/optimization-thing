@@ -6,11 +6,10 @@ from FuncCtrls import configurar_parametros
 def gradiente(f, x, h=1e-5):
     grad = []
     for i in range(len(x)):
-        xh1 = x.copy()
-        xh2 = x.copy()
+        xh1, xh2 = x.copy(), x.copy()
         xh1[i] += h
         xh2[i] -= h
-        grad.append((f(xh1) - f(xh2)) / (2 * h))
+        grad.append((f(xh1[0], xh1[1]) - f(xh2[0], xh2[1])) / (2 * h))
     return np.array(grad)
 
 def hessiano(f, x, h=1e-5):
@@ -18,18 +17,17 @@ def hessiano(f, x, h=1e-5):
     H = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
-            xp = x.copy()
-            xm = x.copy()
+            xp, xm = x.copy(), x.copy()
             xp[i] += h
             xp[j] += h
             xm[i] -= h
             xm[j] -= h
-            fpp = f(xp)
-            fmm = f(xm)
+            fpp = f(xp[0], xp[1])
+            fmm = f(xm[0], xm[1])
             xp[i] -= 2*h
             xm[j] -= 2*h
-            fpm = f(xp)
-            fmp = f(xm)
+            fpm = f(xp[0], xp[1])
+            fmp = f(xm[0], xm[1])
             H[i, j] = (fpp + fmm - fpm - fmp) / (4 * h**2)
     return H
 
@@ -67,7 +65,7 @@ def run(funcion, intervalo):
     x = np.linspace(x_range[0], x_range[1], 300)
     y = np.linspace(y_range[0], y_range[1], 300)
     X, Y = np.meshgrid(x, y)
-    Z = np.vectorize(lambda x, y: funcion([x, y]))(X, Y)
+    Z = np.vectorize(lambda x, y: funcion(x, y))(X, Y)
 
     fig, ax = plt.subplots()
     ax.contourf(X, Y, Z, levels=50, cmap="viridis")
