@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from funcCtrls import configurar_parametros
+from FuncCtrls import configurar_parametros
 
 def evaluar_vecinos(x, delta):
     vecinos = []
