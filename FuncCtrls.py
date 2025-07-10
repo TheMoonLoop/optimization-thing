@@ -1,17 +1,18 @@
 import streamlit as st
 
+# Función auxiliar para configurar los parámetros de búsqueda para cualquier método
+# Se adapta automáticamente según el tipo de función (univariable tipo lambda x: ... o multivariable tipo lambda x, y: ...)
 def configurar_parametros(funcion, intervalo_por_defecto, clave_prefix=""):
     st.markdown("### Parámetros de búsqueda")
 
-    MAX_PUNTOS = 10000  # límite superior para puntos
+    MAX_PUNTOS = 10000  # Límite para evitar demasiadas evaluaciones y sobrecarga
+    es_vector = callable(funcion) and (funcion.__code__.co_argcount == 1)  # Función de 1 argumento
+    es_doble = callable(funcion) and (funcion.__code__.co_argcount == 2)  # Función de 2 argumentos
 
-    # Identificar tipo de función
-    es_vector = callable(funcion) and (funcion.__code__.co_argcount == 1)
-    es_doble = callable(funcion) and (funcion.__code__.co_argcount == 2)
-
-    # Fila de parámetros: precisión, inferior, superior, iteraciones
+    # Distribución en columnas: precisión, intervalo inferior/superior, iteraciones
     col_prec, col_inf, col_sup, col_iter = st.columns([1.2, 1, 1, 1.3])
 
+    # Selección de precisión
     with col_prec:
         precision = st.selectbox(
             "Precisión",
@@ -20,6 +21,7 @@ def configurar_parametros(funcion, intervalo_por_defecto, clave_prefix=""):
             key=clave_prefix + "precision"
         )
 
+    # Caso: funciones de una sola variable (univariable)
     if es_vector:
         with col_inf:
             a = st.number_input("Inferior", value=float(intervalo_por_defecto[0]), key=clave_prefix + "rango_inf")
@@ -35,10 +37,12 @@ def configurar_parametros(funcion, intervalo_por_defecto, clave_prefix=""):
                 key=clave_prefix + "iteraciones"
             )
 
+        # Validación del rango
         if a >= b:
             st.error("El límite inferior debe ser menor que el superior.")
             return None, None, None, None
 
+        # Cálculo del número estimado de puntos
         n_puntos = int((b - a) / precision)
         if n_puntos > MAX_PUNTOS:
             st.warning(f"Demasiados puntos calculados ({n_puntos}). Se limitará a {MAX_PUNTOS}.")
@@ -46,6 +50,7 @@ def configurar_parametros(funcion, intervalo_por_defecto, clave_prefix=""):
 
         return (a, b), n_puntos, precision, iteraciones
 
+    # Caso: funciones de dos variables explícitas (x, y)
     elif es_doble:
         with col_iter:
             iteraciones = st.number_input(
@@ -70,10 +75,12 @@ def configurar_parametros(funcion, intervalo_por_defecto, clave_prefix=""):
         with col_y2:
             y_max = st.number_input("y max", value=float(intervalo_por_defecto[1][1]), key=clave_prefix + "y_max")
 
+        # Validación de los límites de x e y
         if x_min >= x_max or y_min >= y_max:
             st.error("Los límites deben estar correctamente definidos (min < max).")
             return None, None, None, None
 
+        # Cálculo aproximado de puntos (simplemente informativo)
         n_puntos = int(((x_max - x_min) + (y_max - y_min)) / (2 * precision))
         if n_puntos > MAX_PUNTOS:
             st.warning(f"Demasiados puntos calculados ({n_puntos}). Se limitará a {MAX_PUNTOS}.")
@@ -81,6 +88,7 @@ def configurar_parametros(funcion, intervalo_por_defecto, clave_prefix=""):
 
         return ((x_min, x_max), (y_min, y_max)), n_puntos, precision, iteraciones
 
+    # Si la función no es reconocida como 1D o 2D, mostrar error
     else:
         st.error("No se pudo interpretar el tipo de función.")
         return None, None, None, None
